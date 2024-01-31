@@ -28,6 +28,8 @@ jobs:
           git checkout -b $BRANCH_NAME
 
       - name: Obtain latest software info summary
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python src/software_info.py
 
       - name: Commit and push changes
