@@ -28,8 +28,6 @@ jobs:
           git checkout -b $BRANCH_NAME
           echo BRNACH_NAME=$BRANCH_NAME
           echo BRNACH_NAME=${BRANCH_NAME}
-          echo BRNACH_NAME=${{ BRANCH_NAME }}
-          echo BRNACH_NAME=${{ env.BRANCH_NAME }}
 
       - name: Obtain latest software info summary
         env:
