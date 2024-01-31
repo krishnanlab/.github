@@ -26,8 +26,6 @@ jobs:
           TIMESTAMP=$(date -u "+%Y-%m-%d")
           BRANCH_NAME="update-software-info-${TIMESTAMP}"
           git checkout -b $BRANCH_NAME
-          echo BRNACH_NAME=$BRANCH_NAME
-          echo BRNACH_NAME=${BRANCH_NAME}
 
       - name: Obtain latest software info summary
         env:
