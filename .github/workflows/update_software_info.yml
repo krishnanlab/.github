@@ -27,8 +27,8 @@ jobs:
           # echo 'BRANCH_NAME="update-software-info-${TIMESTAMP}"' >> $GITHUB_ENV
           TIMESTAMP=$(date -u "+%Y-%m-%d")
           BRANCH_NAME="update-software-info-${TIMESTAMP}"
-          echo 'TIMESTAMP=${TIMESTAMP}' >> $GITHUB_ENV
-          echo 'BRANCH_NAME=${BRANCH_NAME}' >> $GITHUB_ENV
+          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
           # git checkout -b $BRANCH_NAME
           echo BRANCH_NAME = $BRANCH_NAME
 
