@@ -13,4 +13,4 @@
 
 ## Quick links
 
-- [Software information summary](software_info/README.md)
+- [Software information summary](../software_info/README.md)
