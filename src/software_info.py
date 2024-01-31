@@ -1,10 +1,12 @@
 import base64
+import os
 import re
 import warnings
 from typing import Dict, Union
 
 import jinja2
 import pandas as pd
+import requests
 from tqdm import tqdm
 
 from config import GITHUB_API_URL, GITHUB_ORG, HOMEDIR, PYPISTATS_API_URL
@@ -19,12 +21,12 @@ def get_basic_info(repo) -> Dict[str, Union[str, float]]:
     }
 
 
-def get_packge_info(repo_contents) -> Dict[str, Union[str, int]]:
+def get_packge_info(repo_contents, session=None) -> Dict[str, Union[str, int]]:
     for content in repo_contents:
         if content["name"] not in ("setup.cfg", "pyproject.toml"):
             continue
 
-        file_b64 = try_get_json(content["git_url"])["content"]
+        file_b64 = try_get_json(content["git_url"], session=session)["content"]
         file_text = base64.b64decode(file_b64).decode()
 
         # Try to extract package name
@@ -41,6 +43,7 @@ def get_packge_info(repo_contents) -> Dict[str, Union[str, int]]:
 
         # Get PyPI stats given the package name
         pypi_stats = try_get_json(join_url(PYPISTATS_API_URL, "packages", pkg_name, "recent"))["data"]
+
         return {
             "Package name": pkg_name,
             "Weekly downloads": int(pypi_stats["last_week"]),
@@ -50,12 +53,12 @@ def get_packge_info(repo_contents) -> Dict[str, Union[str, int]]:
     return {}
 
 
-def get_zenodo_info(repo_contents) -> Dict[str, str]:
+def get_zenodo_info(repo_contents, session=None) -> Dict[str, str]:
     for content in repo_contents:
         if content["name"] != "README.md":
             continue
 
-        file_b64 = try_get_json(content["git_url"])["content"]
+        file_b64 = try_get_json(content["git_url"], session=session)["content"]
         file_text = base64.b64decode(file_b64).decode()
 
         pattern = re.compile(r"\[!\[DOI\]\(https://zenodo.org/badge/DOI/[\w.//]*\)\]\([\w.://]*\)")
@@ -66,17 +69,20 @@ def get_zenodo_info(repo_contents) -> Dict[str, str]:
 
 
 def get_software_info_summary() -> pd.DataFrame:
-    repos = try_get_json(join_url(GITHUB_API_URL, "orgs", GITHUB_ORG, "repos"))
+    with requests.Session() as s:
+        if (gh_token := os.environ.get("GH_TOKEN")):
+            s.headers.update({"Authorization": f"Bearer {gh_token}"})
+        repos = try_get_json(join_url(GITHUB_API_URL, "orgs", GITHUB_ORG, "repos"), s)
 
-    stats_list = []
-    for repo in tqdm(repos):
-        repo_contents = try_get_json(join_url(repo["url"], "contents"))
+        stats_list = []
+        for repo in tqdm(repos):
+            repo_contents = try_get_json(join_url(repo["url"], "contents"), s)
 
-        repo_stats = get_basic_info(repo)
-        repo_stats.update(get_packge_info(repo_contents))
-        repo_stats.update(get_zenodo_info(repo_contents))
+            repo_stats = get_basic_info(repo)
+            repo_stats.update(get_packge_info(repo_contents, session=s))
+            repo_stats.update(get_zenodo_info(repo_contents, session=s))
 
-        stats_list.append(repo_stats)
+            stats_list.append(repo_stats)
 
     return (
         pd

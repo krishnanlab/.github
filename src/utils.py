@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from typing import Tuple
+from typing import Optional, Tuple
 
 import requests
 from requests.exceptions import RequestException
@@ -10,8 +10,9 @@ def join_url(*parts: Tuple[str]) -> str:
     return "/".join(parts)
 
 
-def try_get_json(url: str):
-    with requests.get(url) as r:
+def try_get_json(url: str, session: Optional[requests.Session] = None):
+    get = requests.get if session is None else session.get
+    with get(url) as r:
         if not r.ok:
             raise RequestException(f"{r!r}: {url}\n{r.text}")
         content = r.json()

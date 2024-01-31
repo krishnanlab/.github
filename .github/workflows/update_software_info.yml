@@ -16,33 +16,34 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Setup branch name and gh config
+        run: |
+          TIMESTAMP=$(date -u "+%Y-%m-%d")
+          BRANCH_NAME="update-software-info-${TIMESTAMP}"
+
+          # Export to env so that they can be accessed later
+          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+
       - name: Install dependencies
         run: |
           pip install pip -U
           pip install -r requirements.txt
 
-      - name: Checkout a new branch
-        run: |
-          TIMESTAMP=$(date -u "+%Y-%m-%d")
-          BRANCH_NAME="update-software-info-${TIMESTAMP}"
-          git checkout -b $BRANCH_NAME
-
       - name: Obtain latest software info summary
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python src/software_info.py
-
-      - name: Commit and push changes
-        run: |
-          git config --global user.name 'github-actions'
-          git config --global user.email 'github-actions@github.com'
-          git add software_info
-          git commit -m "[${TIMESTAMP}] update software info"
-          git push origin HEAD
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ env.BRANCH_NAME }}
+          commit-message: "[${{ env.TIMESTAMP }}] update software info"
           title: "Automated software info update"
           body: "This is an auto-generated PR with updates to the software info."
           draft: false
