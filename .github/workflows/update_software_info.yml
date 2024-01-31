@@ -8,6 +8,9 @@ on:
 jobs:
   update-readme:
     runs-on: ubuntu-latest
+    env:
+        TIMESTAMP=$(date -u "+%Y-%m-%d")
+        BRANCH_NAME="update-software-info-${TIMESTAMP}"
     steps:
       - uses: actions/checkout@v4
 
@@ -23,28 +26,27 @@ jobs:
 
       - name: Checkout a new branch
         run: |
-          TIMESTAMP=$(date -u "+%Y-%m-%d")
-          BRANCH_NAME="update-software-info-${TIMESTAMP}"
-          git checkout -b $BRANCH_NAME
+          # git checkout -b ${{ env.BRANCH_NAME }}
+          echo BRANCH_NAME=${{ env.BRANCH_NAME }}
 
-      - name: Obtain latest software info summary
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python src/software_info.py
+      # - name: Obtain latest software info summary
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: python src/software_info.py
 
-      - name: Commit and push changes
-        run: |
-          git config --global user.name 'github-actions'
-          git config --global user.email 'github-actions@github.com'
-          git add software_info
-          git commit -m "[${{ env.TIMESTAMP }}] update software info"
-          git push origin HEAD
+      # - name: Commit and push changes
+      #   run: |
+      #     git config --global user.name 'github-actions'
+      #     git config --global user.email 'github-actions@github.com'
+      #     git add software_info
+      #     git commit -m "[${{ env.TIMESTAMP }}] update software info"
+      #     git push origin HEAD
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ env.BRANCH_NAME }}
-          title: "Automated software info update"
-          body: "This is an auto-generated PR with updates to the software info."
-          draft: false
+      # - name: Create Pull Request
+      #   uses: peter-evans/create-pull-request@v6
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     branch: ${{ env.BRANCH_NAME }}
+      #     title: "Automated software info update"
+      #     body: "This is an auto-generated PR with updates to the software info."
+      #     draft: false
