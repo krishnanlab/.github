@@ -8,9 +8,6 @@ on:
 jobs:
   update-readme:
     runs-on: ubuntu-latest
-    env:
-        TIMESTAMP=$(date -u "+%Y-%m-%d")
-        BRANCH_NAME="update-software-info-${TIMESTAMP}"
     steps:
       - uses: actions/checkout@v4
 
@@ -26,8 +23,16 @@ jobs:
 
       - name: Checkout a new branch
         run: |
-          # git checkout -b ${{ env.BRANCH_NAME }}
-          echo BRANCH_NAME=${{ env.BRANCH_NAME }}
+          echo 'TIMESTAMP=$(date -u "+%Y-%m-%d")' >> $GITHUB_ENV
+          echo 'BRANCH_NAME="update-software-info-${TIMESTAMP}"' >> $GITHUB_ENV
+          # TIMESTAMP=$(date -u "+%Y-%m-%d")
+          # BRANCH_NAME="update-software-info-${TIMESTAMP}"
+          # git checkout -b $BRANCH_NAME
+          echo BRANCH_NAME = $BRANCH_NAME
+
+      - name: test
+        run: |
+          echo BRANCH_NAME = $BRANCH_NAME
 
       # - name: Obtain latest software info summary
       #   env:
